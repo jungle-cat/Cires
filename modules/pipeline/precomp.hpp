@@ -1,7 +1,7 @@
 /*
  * precomp.hpp
  *
- *  Created on: 2014年3月1日
+ *  Created on: 2014年3月2日
  *      Author: Feng
  */
 
@@ -11,9 +11,7 @@
 
 #include <opencv/cv.h>
 
-#include <stdexcept>
-
-#include <common/Macro.hpp>
+#include <string>
 
 
 #endif // __PRECOMP_HPP__

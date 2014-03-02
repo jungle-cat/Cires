@@ -1,21 +1,21 @@
 /*
- * HEDescriptor.hpp
+ * HEQuantizer.hpp
  *
  *  Created on: 2014年3月1日
  *      Author: Feng
  */
 
-#ifndef HEDESCRIPTOR_HPP_
-#define HEDESCRIPTOR_HPP_
+#ifndef __HEQUANTIZER_HPP__
+#define __HEQUANTIZER_HPP__
 
 #include "precomp.hpp"
 
 CIRES_BEGIN_NAMESPACE
 
-class HEDescriptor
+class HEQuantizer
 {
 	public:
-		HEDescriptor( const cv::Mat& proj )
+		HEQuantizer( const cv::Mat& proj )
 		{
 		}
 
@@ -33,7 +33,6 @@ class HEDescriptor
 			cv::Mat z = descriptors * p.t();
 
 			// median
-
 		}
 
 		void load( cv::FileNode& ns )
@@ -52,4 +51,4 @@ class HEDescriptor
 };
 
 CIRES_END_NAMESPACE
-#endif /* HEDESCRIPTOR_HPP_ */
+#endif // __HEQUANTIZER_HPP__

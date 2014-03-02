@@ -11,6 +11,7 @@
 #define CIRES_BEGIN_NAMESPACE namespace cires{
 #define CIRES_END_NAMESPACE }
 
-
+#define __CIRES_STD_NTH
+#define __CIRES_HOUSEHOLD
 
 #endif /* MACRO_HPP_ */

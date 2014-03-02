@@ -34,11 +34,11 @@ class LocalFeatureExtractor
 			return std::make_tuple(std::move(keypoints), descriptors);
 		}
 
-		void load( const cv::FileNode& ns )
+		void load( const cv::FileNode& fn )
 		{
 		}
 
-		void store( const cv::FileStorage fs ) const
+		void store( cv::FileStorage fs ) const
 		{
 		}
 
