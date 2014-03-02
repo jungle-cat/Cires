@@ -10,6 +10,8 @@
 
 #include "precomp.hpp"
 
+CIRES_BEGIN_NAMESPACE
+
 typedef cv::SURF DefaultLFE;
 
 template <typename LFEImpl = DefaultLFE>
@@ -50,4 +52,5 @@ class LocalFeatureExtractor
 };
 
 
+CIRES_END_NAMESPACE
 #endif /* LOCALFEATURES_HPP_ */

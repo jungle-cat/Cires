@@ -10,14 +10,9 @@
 
 
 #include <opencv/cv.h>
-#include <opencv2/nonfree/features2d.hpp>
 
-
-#include <string>
-#include <vector>
-#include <memory>
 
 #include <common/Macro.hpp>
-#include <common/Algnum.hpp>
+
 
 #endif /* PRECOMP_HPP_ */
