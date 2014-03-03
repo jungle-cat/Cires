@@ -20,7 +20,7 @@ class LocalFeatureExtractor
 	public:
 		template <typename ...Args>
 		LocalFeatureExtractor(Args... args)
-			: m_extractor(std::forward<Args...>(args))
+			: m_extractor(std::forward<Args>(args)...)
 		{
 		}
 
@@ -29,7 +29,7 @@ class LocalFeatureExtractor
 		{
 			std::vector<cv::KeyPoint> keypoints;
 			cv::Mat descriptors;
-			m_extractor.compute(image, keypoints, descriptors);
+			m_extractor(image, cv::Mat(), keypoints, descriptors);
 
 			return std::make_tuple(std::move(keypoints), descriptors);
 		}

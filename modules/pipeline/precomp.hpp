@@ -14,4 +14,8 @@
 #include <string>
 
 
+#include <features/BoWHEFeatures.hpp>
+#include <features/LocalFeatures.hpp>
+#include <index/ImageMetaInfo.hpp>
+
 #endif // __PRECOMP_HPP__

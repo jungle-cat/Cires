@@ -10,21 +10,36 @@
 #include <memory>
 
 #include <opencv/cv.h>
+#include <opencv/highgui.h>
 
-#include <common/Algnum.hpp>
+#include <features/LocalFeatures.hpp>
+#include <features/BagofWords.hpp>
 
 int main()
 {
-	 cv::Mat m = (cv::Mat_<double>(5, 3) << 12,-51,4,6,167,-68,-4,24,-41,-1,1,0,2,0,3);
+	cires::LocalFeatureExtractor<> detector(400);
 
-//	cv::Mat m = (cv::Mat_<double>(3,3) << 12,-51,4,6,167,-68,-4,24,-41);
-	std::cout << m << std::endl;
+	std::string name = "C:/Users/Feng/Pictures/original_5xuj_08e10001e492125f.jpg";
+	cv::Mat img = cv::imread(name).clone();
+	if (img.empty())
+		std::cerr << "Error: failed to load image.\n";
 
-	std::tuple<cv::Mat, cv::Mat> ret = cires::Algnum::QR(m);
-	auto q = std::get<0>(ret);
-	auto r = std::get<1>(ret);
-	std::cout << q << std::endl;
-	std::cout << r << std::endl;
-	std::cout << q*r << std::endl;
+	auto ret = detector.compute(img);
+
+	std::vector<cv::KeyPoint> keypoints = std::get<0>(ret);
+	cv::Mat descriptors = std::get<1>(ret);
+
+	cires::BoWFeatures bow(descriptors);
+
+	cv::Mat feature = descriptors.rowRange(1,7);
+	cv::Mat label = bow.assign(feature,9);
+	std::cout << label << std::endl;
+
+std::cout << detector.size() << std::endl;
+std::cout << descriptors.rows << std::endl;
+	cv::Mat draw;
+	cv::drawKeypoints(img, keypoints, draw, cv::Scalar(0,0,255));
+	cv::imshow("test", draw);
+	cv::waitKey();
 	return 0;
 }
