@@ -33,16 +33,16 @@ struct InvertedIndexNode
 		: image_id(-1), keypoint_id(-1), binary(-1), orientation(-1), logscale(-1)
 	{}
 
-	InvertedIndexNode(unsigned int iid, unsigned int kid, float o, float s)
-		: image_id(iid), keypoint_id(kid), binary(-1), orientation(o), logscale(s)
+	InvertedIndexNode(unsigned int iid, unsigned int kid, hash_type b, float o, float s)
+		: image_id(iid), keypoint_id(kid), binary(b), orientation(o), logscale(s)
 	{}
 };
 
 
 struct CandidateElemInfo
 {
-	std::vector<int> ori_hist;
-	std::vector<int> logs_hist;
+	std::vector<float> ori_hist;
+	std::vector<float> logs_hist;
 
 	CandidateElemInfo()
 		: ori_hist(ORI_HIST_LEN, 0), logs_hist(LOGS_HIST_LEN, 0)
@@ -58,7 +58,7 @@ class InvertedIndexPostingList
 		typedef std::deque<InvertedIndexNode>::iterator iterator;
 
 		InvertedIndexPostingList()
-			: weight(1)
+			: activated(true), weight(1)
 		{}
 
 		void add( const InvertedIndexNode& n )
@@ -85,7 +85,7 @@ class InvertedIndex
 		typedef InvertedIndexNode::word_type word_type;
 		typedef InvertedIndexNode::hash_type hash_type;
 
-		InvertedIndex( size_t voc_num = 0 )
+		InvertedIndex()
 		{}
 
 		template <typename ...Args>

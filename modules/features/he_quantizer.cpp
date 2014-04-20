@@ -19,7 +19,7 @@ Mat initProj(int dims, int bitlen, int dtype)
 	return p.rowRange(0, bitlen);
 }
 
-void HEQuantizer::train( const vector<Mat>& descs, size_t bitlen )
+tuple<Mat, Mat> HEQuantizer::train( const vector<Mat>& descs, size_t bitlen )
 {
 	RuntimeCheck(!descs.empty(), "No descriptors are provided for training.");
 
@@ -45,15 +45,17 @@ void HEQuantizer::train( const vector<Mat>& descs, size_t bitlen )
 			thresh(j) = vals[mid_idx];
 		}
 	} //
+	m_proj = m_proj.t();
+	return make_tuple(m_proj, m_threshs);
 }
 
 HEQuantizer::hash_type HEQuantizer::compute( const Mat& desc, HEQuantizer::word_type word ) const
 {
-	RuntimeCheck(desc.cols == m_proj.cols, "Error: descriptors and projection matrix do not match.");
-	RuntimeCheck(m_proj.rows <= 64, "Error: maximally 64 bit hashing is supported.");
+	RuntimeCheck(desc.cols == m_proj.rows, "Error: descriptors and projection matrix do not match.");
+	RuntimeCheck(m_proj.cols <= 64, "Error: maximally 64 bit hashing is supported.");
 
-	const size_t bitlen = m_proj.rows;
-	Mat_<unsigned char> cr = ( desc * m_proj.t() ) > m_threshs.row(word);
+	const size_t bitlen = m_proj.cols;
+	Mat_<unsigned char> cr = ( desc * m_proj ) > m_threshs.row(word);
 
 	hash_type signature = 0x0;
 	for ( int i = 0; i < cr.cols; ++i) {

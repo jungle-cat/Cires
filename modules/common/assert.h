@@ -12,6 +12,7 @@
 #include "type.h"
 
 
+
 #define checkParams(...) CheckAndParams(__VA_ARGS__)
 
 #define CheckAndParams(...) \
@@ -140,12 +141,12 @@ bool is_empty_string(const string& str)
 
 #define RuntimeCheck(x, msg)                                          \
 	if (!(x)) {                                                       \
-		stringstream ss;                                         \
+		std::stringstream ss;                                         \
 		ss << "Runtime assert: \"" << #x << "\" failed in function '" \
 		   << __FUNC__ << "' of file '" << __FILE__ << "' line '"     \
 		   << __LINE__ << "'.\n" ;                                    \
-		if (!cires::is_empty_string(msg)) ss << "Message: " << string(msg) << ".\n"; \
-		throw runtime_error(ss.str());                           \
+		if (!cires::is_empty_string(msg)) ss << "Message: " << std::string(msg) << ".\n"; \
+		throw std::runtime_error(ss.str());                           \
 	}
 
 #define BoundaryCheck(x, msg)                                         \
@@ -155,7 +156,7 @@ bool is_empty_string(const string& str)
 		   << __FUNC__ << "' of file '" << __FILE__ << "' line '"     \
 		   << __LINE__ << "'.\n";                                     \
 		if (!cires::is_empty_string(msg)) ss << "Message: " << msg << ".\n"; \
-		throw out_of_range(ss.str());                            \
+		throw std::out_of_range(ss.str());                            \
 	}
 
 

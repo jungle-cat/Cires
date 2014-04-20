@@ -25,16 +25,27 @@ class Main
 
 		void start_retriever( const cires::Params& param )
 		{
+			retriever.initConfig(param);
 		}
 
-		void train_system( const cires::Params& param, const std::string srcdir, const std::string& outconf )
+		void start_retriever( const std::string& configure )
 		{
-			retriever.initConfig(param);
-			load_images(srcdir);
+			cv::FileStorage fs(configure, cv::FileStorage::READ);
+			if (!fs.isOpened())
+				throw std::runtime_error("Error: failed to load configuration.");
+			retriever.rebuild();
+		}
+
+		void train_system( const std::string& srcdir, const std::string& outconf, const cires::Params& preconf )
+		{
+			std::cerr << "Starting traning ... \n";
+			cires::Params param = retriever.train(srcdir, preconf);
+			std::cerr << "Finished trianing .... \n";
 
 			cv::FileStorage fs(outconf, cv::FileStorage::WRITE);
-			retriever.store(fs);
+			param.store(fs);
 		}
+
 
 		/*
 		 *  Load images for a given directory.
@@ -94,6 +105,7 @@ class Main
 			return ss.str() + "\r\n\r\n";
 		}
 
+
 		cires::ImageRetriever retriever;
 };
 
@@ -101,17 +113,15 @@ class Main
 int main(int argc, char** argv)
 {
 	const std::string keys =
-			"{help h ? usage   |  NULL  |      | print help message     }"
-			"{type             | string |      | build or service (MUST)}"
-			"{vocabulary       | string |      | vocabulary file path   }"
-			"{configure        | string |      | vocabulary file path   }"
-			"{vocabulary-len   | digits |      | vocabulary size        }"
-			"{hamming-len      | digits |      | hamming binary bit num }"
-			"{src-dir          | string |      | image directory        }"
-			"{db-dir           | string |      | image db directory     }"
-			"{tmp-dir          | string |      | temporary directory    }"
-			"{port             | digits | 4560 | listening port         }"
-			"{hessian-response | digits | 700  | hessian response (SURF)}";
+			"{help h ? usage   |  NULL  |       | print help message     }"
+			"{type             | string | build | build or service (MUST)}"
+			"{vocabulary       | string |       | vocabulary file path   }"
+			"{configure        | string |       | vocabulary file path   }"
+			"{voclen           | digits |       | vocabulary size        }"
+			"{binarylen        | digits |       | hamming binary bit num }"
+			"{srcdir           | string |       | image directory        }"
+			"{port             | digits |  4560 | listening port         }"
+			"{hessian          | digits |  700  | hessian response (SURF)}";
 
 	cv::CommandLineParser parser(argc, argv, keys.c_str());
 
@@ -121,9 +131,17 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	Main job;
 	cires::Params param;
 
+	// if user provided configure file for retrieving, read params
+	const std::string confname = parser.has("configure") ? parser.get<std::string>("configure") : "";
+	if (!confname.empty() && type == "build") {
+		cv::FileStorage fs(confname, cv::FileStorage::READ);
+		RuntimeCheck(fs.isOpened(), "Error: failed to load configure file.");
+		param.load(fs.root());
+	}
+
+	// user provided settings.
 	if (parser.has("vocabulary")) {
 		const std::string vocfile = parser.get<std::string>("vocabulary");
 		cv::Mat voc = Main::read_matrix(vocfile, "vocabulary");
@@ -131,35 +149,24 @@ int main(int argc, char** argv)
 			param.vocabulary = voc;
 		}
 	}
-	if (parser.has("hessian-response")) {
-		const float hessianrep = parser.get<float>("hessian-response");
+	if (parser.has("hessian")) {
+		const float hessianrep = parser.get<float>("hessian");
 		if (hessianrep < 200)
 			std::cerr << "Warning: too small hessian response, use default value instead.\n";
 		else
 			param.hessian = hessianrep;
 	}
-	if (parser.has("db-dir")) {
-		const std::string db_dir = parser.get<std::string>("db-dir");
-		param.dbdir = db_dir;
-	}
-	if (parser.has("tmp-dir")) {
-		const std::string tmp_dir = parser.get<std::string>("db-dir");
-		param.tmpdir = tmp_dir;
-	}
 
-	const std::string src_dir = parser.get<std::string>("src-dir");
+
+	RuntimeCheck(parser.has("srcdir"), "Error: no srcdir provided.")
+	const std::string srcdir = parser.get<std::string>("srcdir");
+
+	Main job;
 
 	if (type == "build") {
-
-		if (not parser.has("src-dir") || not parser.has("tmp-dir"))
-			throw std::runtime_error("Error: src-dir and tmp-dir should both be set.");
-
-
-		job.train_system(param, src_dir, "out.yaml");
-
+		job.train_system(srcdir, confname, param);
 	}
-	else {
-		// start retrieval service.
+	else if (type == "service") {
 		const int port = parser.get<int>("port");
 		MultimediaServer server(port);
 		job.start_retriever(param);
@@ -182,5 +189,6 @@ int main(int argc, char** argv)
 
 		server.run(caller);
 	}
+
 	return 0;
 }

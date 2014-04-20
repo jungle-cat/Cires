@@ -40,11 +40,18 @@ class BoWHEFeatures
 		typedef id_type                word_type;
 		typedef BoWHENode              fenode_type;
 
+		typedef LocalFeatureType       lfextractor_type;
 
-		BoWHEFeatures()
-		{}
 
-		void train( const Mat& desc, const Mat& vocab, int bitnum )
+		BoWHEFeatures() = default;
+
+		template <typename ...Args>
+		BoWHEFeatures(const Mat& voc, const Mat& p, const Mat& th, Args... args)
+			: m_bow(voc), m_he(p, th), m_lfextractor(forward<Args>(args)...)
+		{
+		}
+
+		tuple<Mat, Mat> train( const Mat& desc, const Mat& vocab, int bitnum )
 		{
 			RuntimeCheck(desc.cols == vocab.cols && desc.type() == DataType<float>::type,
 					"Error: descriptors and vocabulary do not match.");
@@ -62,7 +69,7 @@ class BoWHEFeatures
 				label.push_back(r);
 			}
 
-			std::vector<cv::Mat> descs;
+			vector<Mat> descs;
 			descs.reserve(indices.size());
 			for (int i = 0; i < indices.size(); ++i) {
 				auto& label = indices[i];
@@ -78,16 +85,21 @@ class BoWHEFeatures
 				descs.push_back(desc_word);
 			}
 
-			m_he.train(descs, bitnum);
+			return m_he.train(descs, bitnum);
 		}
 
-		std::tuple<cv::Mat, cv::Mat> train( const cv::Mat& descriptors, int wordnum, int bitnum )
+		tuple<Mat, Mat, Mat> train( const Mat& descriptors, int wordnum, int bitnum )
 		{
-			cv::Mat vocab = m_bow.train(descriptors, wordnum);
-			cv::Mat median = train(descriptors, vocab, bitnum);
-			return std::make_tuple(vocab, median);
+			Mat vocab = m_bow.train(descriptors, wordnum);
+			auto ret = train(descriptors, vocab, bitnum);
+			return make_tuple(vocab, std::get<0>(ret), std::get<1>(ret));
 		}
 
+		/*!
+		 * @param keypoints
+		 * @param descriptors
+		 * @return
+		 */
 		std::vector<fenode_type> compute( const std::vector<cv::KeyPoint>& keypoints, const cv::Mat& descriptors )
 		{
 			if (keypoints.size() != descriptors.rows || descriptors.channels() != 1 || descriptors.type() != cv::DataType<float>::type)
@@ -111,6 +123,11 @@ class BoWHEFeatures
 			return std::move(info);
 		}
 
+		/*!
+		 *  Compute the descriptors for a given grayscale image.
+		 *  @param image The single channel 8-bit length image.
+		 *  @return
+		 */
 		std::vector<fenode_type> compute( const cv::Mat& image )
 		{
 			auto ret = m_lfextractor.compute(image);
@@ -118,6 +135,11 @@ class BoWHEFeatures
 			auto descriptors = std::get<1>(ret);
 
 			return compute( keypoints, descriptors );
+		}
+
+		lfextractor_type& lfextractor()
+		{
+			return m_lfextractor;
 		}
 
 		void load( const cv::FileNode& fn )
@@ -129,9 +151,9 @@ class BoWHEFeatures
 		}
 
 	private:
-		BoWFeatures   m_bow;
-		HEQuantizer   m_he;
-		LocalFeatureType m_lfextractor;
+		BoWFeatures      m_bow;
+		HEQuantizer      m_he;
+		lfextractor_type m_lfextractor;
 };
 
 }

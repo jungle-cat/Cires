@@ -20,11 +20,11 @@ class HEQuantizer
 
 		HEQuantizer() = default;
 
-		HEQuantizer( const Mat& proj )
-			: m_proj(proj)
+		HEQuantizer( const Mat& proj, const Mat& threshs )
+			: m_proj(proj), m_threshs(threshs)
 		{}
 
-		void train( const vector<Mat>& descs, size_t bitlen );
+		tuple<Mat, Mat> train( const vector<Mat>& descs, size_t bitlen );
 		hash_type compute( const Mat& descr, word_type word_id ) const;
 
 	private:

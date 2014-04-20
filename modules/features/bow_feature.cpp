@@ -46,6 +46,9 @@ Mat BoWFeatures::train( const Mat& descs, size_t num )
 				3,
 				cv::KMEANS_PP_CENTERS,
 				centers);
+
+	if (not centers.empty())
+		m_vocab = centers;
 	return centers;
 }
 

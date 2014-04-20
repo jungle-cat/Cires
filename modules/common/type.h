@@ -18,6 +18,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <memory>
+#include <list>
 
 
 #include <opencv/cv.h>
@@ -46,6 +47,7 @@ using std::nullptr_t;
 using std::shared_ptr;
 using std::forward;
 using std::move;
+
 
 typedef cv::Size size;
 using cv::Mat;
