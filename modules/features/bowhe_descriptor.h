@@ -83,7 +83,9 @@ class BoWHEFeatures
 				}
 
 				descs.push_back(desc_word);
+
 			}
+
 
 			return m_he.train(descs, bitnum);
 		}

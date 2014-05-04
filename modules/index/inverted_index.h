@@ -10,6 +10,18 @@
 
 #include <common/common.h>
 
+static
+int popcnt (unsigned long long val)
+{
+	int cnt = 0;
+	unsigned long long mask = 0x01;
+	for (std::size_t i = 0; i < 64; ++i) {
+		mask <<= i;
+		if (val & mask)
+			cnt += 1;
+	}
+	return cnt;
+}
 
 #define ORI_HIST_LEN 16
 #define LOGS_HIST_LEN 16
@@ -63,6 +75,8 @@ class InvertedIndexPostingList
 
 		void add( const InvertedIndexNode& n )
 		{
+			auto image_id = n.image_id;
+			docinfo[image_id] += 1.0;
 			storage.push_back(n);
 		}
 		tuple<const_iterator, const_iterator> collections() const
@@ -70,12 +84,18 @@ class InvertedIndexPostingList
 			return make_tuple(storage.begin(), storage.end());
 		}
 
+		float doc_counts() const
+		{
+			return docinfo.size();
+		}
+
 	private:
 		bool   activated;
-		std::deque<InvertedIndexNode> storage;
+		deque<InvertedIndexNode> storage;
 
 	public:
 		float  weight;
+		unordered_map<id_type, float> docinfo;
 };
 
 
@@ -92,18 +112,17 @@ class InvertedIndex
 		void add(word_type wid, Args... args)
 		{
 			InvertedIndexNode n(std::forward<Args>(args)...);
+
+			docflags.insert(n.image_id);
 			storage[wid].add(n);
 		}
 
 		template <typename Iterator>
-		void add( id_type image_id, Iterator start, Iterator stop )
+		vector<tuple<id_type, float>> query(Iterator start, Iterator stop, int thresh = 5)
 		{
-		}
-
-		template <typename Iterator>
-		vector<tuple<id_type, float>> query(Iterator start, Iterator stop)
-		{
-			std::unordered_map<unsigned int, CandidateElemInfo> candidates;
+//			unordered_map<unsigned int, CandidateElemInfo> candidates;
+			unordered_map<id_type, float> candidates;
+			const float totaldocs = docflags.size();
 
 			for ( auto it1 = start; it1 != stop; ++it1) {
 				word_type w = it1->word_id;
@@ -111,13 +130,27 @@ class InvertedIndex
 				float o = it1->orientation;
 				hash_type b = it1->signature;
 
-
 				auto ls = storage[w].collections();
+				const float idocnum = storage[w].doc_counts();
 				auto begin = std::get<0>(ls);
 				auto end = std::get<1>(ls);
 				if (begin == end)
 					continue;
 
+				const float ww = sqrt(idocnum);
+
+				for (auto it = begin; it != end; ++it) {
+					auto img_id = it->image_id;
+					auto binary = it->binary;
+
+					if (popcnt(binary^b) > thresh)
+						continue;
+					auto& refscore = candidates[img_id];
+
+					refscore += log(totaldocs / idocnum) / ww;
+				}
+
+				/*
 				float weight = storage[w].weight;
 				for (auto it = begin; it != end; ++it) {
 					auto img_id = it->image_id;
@@ -134,26 +167,41 @@ class InvertedIndex
 					entry.ori_hist[dori_idx] += 1;
 					entry.logs_hist[dlogs_idx] += 1;
 				} // for collections
+				*/
 			}
-
-			vector<tuple<unsigned int, float> > rets;
+			vector<tuple<id_type, float>> rets;
 			rets.reserve(candidates.size());
-			for (auto& x : candidates) {
-				auto& hists = x.second;
-				float maxval = std::max(*std::max_element(hists.ori_hist.begin(), hists.ori_hist.end()),
-										*std::max_element(hists.logs_hist.begin(), hists.logs_hist.end()));
-				rets.push_back(std::make_tuple(x.first, maxval));
-			}
 
-			std::sort( rets.begin(), rets.end(),
+			for( auto& x : candidates) {
+				rets.push_back(make_tuple(x.first, x.second));
+			}
+			std::sort(rets.begin(), rets.end(),
 					[](const tuple<unsigned int, float>& x, const tuple<unsigned int, float>& y){
-						return std::get<1>(x) >= std::get<1>(y);
-					});
+				        return std::get<1>(x) >= std::get<1>(y);
+			        });
+
 			return move(rets);
+
+
+//			vector<tuple<unsigned int, float> > rets;
+//			rets.reserve(candidates.size());
+//			for (auto& x : candidates) {
+//				auto& hists = x.second;
+//				float maxval = std::max(*std::max_element(hists.ori_hist.begin(), hists.ori_hist.end()),
+//										*std::max_element(hists.logs_hist.begin(), hists.logs_hist.end()));
+//				rets.push_back(std::make_tuple(x.first, maxval));
+//			}
+//
+//			std::sort( rets.begin(), rets.end(),
+//					[](const tuple<unsigned int, float>& x, const tuple<unsigned int, float>& y){
+//						return std::get<1>(x) >= std::get<1>(y);
+//					});
+//			return move(rets);
 		}
 
 	private:
-		std::vector<InvertedIndexPostingList> storage;
+		unordered_set<id_type> docflags;
+		vector<InvertedIndexPostingList> storage;
 };
 
 

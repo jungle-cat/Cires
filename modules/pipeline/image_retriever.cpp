@@ -27,14 +27,17 @@ void ImageRetriever::initConfig( const Params& param )
 								 param.thresholds,
 								 param.hessian);
 	m_maximglen = param.imgmaxlen;
+	m_binthresh = param.binthresh;
 }
 
 
 void ImageRetriever::addImage( const Mat& image, const string& name )
 {
 	imageid_type id = m_metainfo.get_id_by_name(name);
-	if (id != minfoindex_type::nindex)
+	if (id != minfoindex_type::nindex) {
+		std::cerr << "\tInfo: image already exists.\n";
 		return;
+	}
 
 	Mat img = reformed(image);
 	id = m_metainfo.insert(name, image, img.size());
@@ -44,9 +47,9 @@ void ImageRetriever::addImage( const Mat& image, const string& name )
 		auto& desc = descinfo[i];
 
 		auto& word_id = desc.word_id;
-		m_invindexer.add( word_id,
-						  id,
-						  i,
+		m_invindexer.add( word_id,           // word id
+						  id,                // image id
+						  i,                 // descriptor id
 						  desc.signature,
 						  desc.orientation,
 						  desc.logscale);
@@ -61,7 +64,7 @@ Params ImageRetriever::train( const string& dirname, const Params& preconf )
 	vector<string> names;
 	// load image names
 	for (auto it = directory_iterator(dir); it != directory_iterator(); ++it)
-		names.push_back((dir / (*it)).string());
+		names.push_back((it->path()).string());
 
 	// shuffle the images
 	std::random_shuffle(names.begin(), names.end());
@@ -79,6 +82,7 @@ Params ImageRetriever::train( const string& dirname, const Params& preconf )
 	Mat descs(maxnum, dims, DataType<float>::type); //TODO add auto configuration for feature type.
 	int count = 0;
 	for (auto it = names.begin(); it != names.end(); ++it) {
+		std::cout << "\t" << *it << std::endl;
 		Mat image = imread(*it);
 		image = reformed(image, imgmaxlen);
 
@@ -123,7 +127,7 @@ vector<tuple<string, float>> ImageRetriever::queryImage( const Mat& image, const
 {
 	Mat img = reformed(image);
 	auto descinfo = m_bwextractor.compute(img);
-	auto rets = m_invindexer.query(descinfo.begin(), descinfo.end());
+	auto rets = m_invindexer.query(descinfo.begin(), descinfo.end(), m_binthresh);
 
 	vector<tuple<string, float>> results;
 	results.reserve(rets.size());

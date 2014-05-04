@@ -11,6 +11,6 @@
 #include "macro.h"
 #include "type.h"
 #include "assert.h"
-
+#include "cmdline_parser.h"
 
 #endif /* __COMMON_H__ */

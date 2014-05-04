@@ -24,6 +24,7 @@ struct Params
 	int voclen = 5000;    //!< the vocabulary length.
 	int binarylen = 64;   //!< the binary length for hamming embedding.
 	int imgmaxlen = 720;
+	int binthresh = 4;
 
 	Mat vocabulary;
 	Mat projection;
@@ -95,6 +96,7 @@ class ImageRetriever
 
 	private:
 		double          m_maximglen;
+		int             m_binthresh;
 		minfoindex_type m_metainfo;
 		descext_type    m_bwextractor;
 		invindex_type   m_invindexer;

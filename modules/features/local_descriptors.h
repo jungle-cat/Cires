@@ -12,7 +12,7 @@
 
 namespace cires {
 
-typedef SURF DefaultLFE;
+typedef cv::SIFT DefaultLFE;
 
 template <typename LFEImpl = DefaultLFE>
 class LocalFeatureExtractor
@@ -32,14 +32,6 @@ class LocalFeatureExtractor
 			m_extractor(image, Mat(), keypoints, descriptors);
 
 			return make_tuple(move(keypoints), descriptors);
-		}
-
-		void load( const FileNode& fn )
-		{
-		}
-
-		void store( FileStorage fs ) const
-		{
 		}
 
 		int size() const

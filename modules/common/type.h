@@ -12,6 +12,7 @@
 #include <deque>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <cmath>
 #include <algorithm>
 #include <sstream>
@@ -47,6 +48,8 @@ using std::nullptr_t;
 using std::shared_ptr;
 using std::forward;
 using std::move;
+using std::map;
+using std::unordered_set;
 
 
 typedef cv::Size size;
@@ -57,7 +60,7 @@ using cv::DataType;
 using cv::SURF;
 using cv::FileStorage;
 using cv::FileNode;
-using cv::CommandLineParser;
+//using cv::CommandLineParser;
 
 /*
  * Cires specific typedef

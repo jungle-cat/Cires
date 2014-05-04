@@ -25,27 +25,34 @@ tuple<Mat, Mat> HEQuantizer::train( const vector<Mat>& descs, size_t bitlen )
 
 	const int dims = descs[0].cols;
 	if (m_proj.empty())
-		m_proj = initProj(dims, bitlen, DataType<float>::type);
-	RuntimeCheck(m_proj.cols == dims, "Error: projection matrix and descriptors do not match.");
+		m_proj = initProj(dims, bitlen, DataType<float>::type).t();
+	RuntimeCheck(m_proj.rows == dims, "Error: projection matrix and descriptors do not match.");
 
 	const int wordnum = descs.size();
 	m_threshs.create(wordnum, bitlen, DataType<float>::type);
 
 	for ( int i = 0; i < wordnum; ++i ) {
 		auto& desc = descs[i];
-		Mat z = desc * m_proj.t();
+		Mat z = desc * m_proj;
+		RuntimeCheck(z.cols == bitlen, "Error: transformed features.");
 		const int num = desc.rows;
 
 		// find median value
 		Mat_<float> thresh = m_threshs.row(i);
 		const int mid_idx = num / 2;
-		for (int j = 0; j < dims; ++j) {
-			vector<float> vals = static_cast<vector<float> >(z.col(j));
+		for (size_t j = 0; j < bitlen; ++j) {
+			Mat zc = z.col(j);
+			std::vector<float> vals;
+			vals.reserve(zc.cols);
+			for (int k = 0; k < zc.rows; ++k) {
+				vals.push_back(zc.at<float>(k));
+			}
+
 			std::nth_element(vals.begin(), vals.begin() + mid_idx, vals.end());
 			thresh(j) = vals[mid_idx];
 		}
 	} //
-	m_proj = m_proj.t();
+
 	return make_tuple(m_proj, m_threshs);
 }
 
