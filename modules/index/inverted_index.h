@@ -147,7 +147,7 @@ class InvertedIndex
 						continue;
 					auto& refscore = candidates[img_id];
 
-					refscore += log(totaldocs / idocnum) / ww;
+					refscore += log(totaldocs / (idocnum+1.0)) / ww;
 				}
 
 				/*

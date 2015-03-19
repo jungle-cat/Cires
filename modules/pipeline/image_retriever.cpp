@@ -17,7 +17,7 @@ using namespace boost::filesystem;
 using cv::imread;
 
 ImageRetriever::ImageRetriever()
-	: m_maximglen(720)
+	: m_maximglen(720), m_binthresh(0)
 {}
 
 void ImageRetriever::initConfig( const Params& param )

@@ -35,7 +35,7 @@
 									<listOptionValue builtIn="false" value="&quot;D:/Program Files/OpenCV/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/modules&quot;"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.other.other.1643949870" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -std=c++11 -Wsign-compare" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.1643949870" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -std=c++11" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1798246482" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.nostdinc.621865432" name="Do not search system directories (-nostdinc)" superClass="gnu.cpp.compiler.option.preprocessor.nostdinc" value="false" valueType="boolean"/>
 								<option id="gnu.cpp.compiler.option.warnings.allwarn.1577497816" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" value="false" valueType="boolean"/>

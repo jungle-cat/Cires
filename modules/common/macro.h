@@ -8,8 +8,11 @@
 #ifndef __MACRO_H__
 #define __MACRO_H__
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+	#define __MINGW__
+#endif
 
-#if defined(__linux__) || defined(__MINGW32__) || defined(__MINGW64__)
+#if defined(__linux__) || defined(__MINGW__)
 	#define __LINUX__
 	#define __POSIX__
 #elif defined(_WIN32) || defined (_WIN63)
